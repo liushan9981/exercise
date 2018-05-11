@@ -2,17 +2,13 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include "combination.h"
-
-
+#include "ioredirect.h"
 
 
 int main(int argc, char *argv[])
 {
 
-    char * error_log_file = "/home/liushan/mylab/clab/mytemp/temp/error.log";
-    char * output_log_file = "/home/liushan/mylab/clab/mytemp/temp/output.log";
-    FILE * fd_err;
-    FILE * fd_output;
+
 
     long num;
 
@@ -23,28 +19,12 @@ int main(int argc, char *argv[])
     }
 
 
-
-
-
-
-//    if ( (fd_err = freopen(error_log_file, "a+", stderr)) == NULL)
-//    {
-//        fprintf(stderr, "freopen file %s error\n", error_log_file);
-//        exit(EXIT_FAILURE);
-//    }
-
-//    if ( (fd_output = freopen(output_log_file, "a+", stdout)) == NULL)
-//    {
-//        fprintf(stderr, "freopen file %s error\n", output_log_file);
-//        exit(EXIT_FAILURE);
-//    }
+    iore_print();
 
 
 
 
 
-    // printf("Hello World!\n");
-    // fprintf(stderr, "hehhe\n");
     return 0;
 }
 
