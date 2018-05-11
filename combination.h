@@ -1,0 +1,2 @@
+
+long mynum(long num);
