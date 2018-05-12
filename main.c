@@ -3,27 +3,13 @@
 #include <unistd.h>
 #include "combination.h"
 #include "ioredirect.h"
+#include "fields.h"
+#include "dualview.h"
 
 
 int main(int argc, char *argv[])
 {
-
-
-
-    long num;
-
-
-    for (num = 1; num <= 20; num++)
-    {
-        printf("%-2ld  ->  %-10ld\n", num, mynum(num) );
-    }
-
-
-    iore_print();
-
-
-
-
+    run_dualview();
 
     return 0;
 }
