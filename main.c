@@ -5,11 +5,12 @@
 #include "ioredirect.h"
 #include "fields.h"
 #include "dualview.h"
+#include "aliases.h"
 
 
 int main(int argc, char *argv[])
 {
-    run_dualview();
+    runalign();
 
     return 0;
 }
