@@ -7,11 +7,12 @@
 #include "dualview.h"
 #include "aliases.h"
 #include "byte_order.h"
+#include "addr_trans.h"
 
 
 int main(int argc, char *argv[])
 {
-    run_byte_order();
+    run_addr_trans();
 
     return 0;
 }
