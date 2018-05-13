@@ -6,11 +6,12 @@
 #include "fields.h"
 #include "dualview.h"
 #include "aliases.h"
+#include "byte_order.h"
 
 
 int main(int argc, char *argv[])
 {
-    runalign();
+    run_byte_order();
 
     return 0;
 }
