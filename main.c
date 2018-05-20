@@ -10,9 +10,12 @@
 #include "addr_trans.h"
 
 
+
 int main(int argc, char *argv[])
 {
-    run_addr_trans();
+    char buf[4];
+
+    printf("%lu\n", sizeof(buf));
 
     return 0;
 }
