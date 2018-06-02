@@ -8,14 +8,19 @@
 #include "aliases.h"
 #include "byte_order.h"
 #include "addr_trans.h"
+#include "mysignal.h"
+#include <stdbool.h>
+
+
+
+
+
 
 
 
 int main(int argc, char *argv[])
 {
-    char buf[4];
-
-    printf("%lu\n", sizeof(buf));
+    run_signal();
 
     return 0;
 }
