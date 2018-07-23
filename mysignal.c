@@ -2,7 +2,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <unistd.h>
-
+#include <sys/wait.h>
 
 Sigfunc *signal(int signo, Sigfunc *func)
 {
@@ -26,6 +26,19 @@ Sigfunc *signal(int signo, Sigfunc *func)
     if (sigaction(signo, &act, &oact) < 0)
         return(SIG_ERR);
     return oact.sa_handler;
+}
+
+
+
+void sig_chld(int signo)
+{
+    pid_t pid;
+    int stat;
+
+    // 改用waitpid，避免并发留下的僵死进程
+    while ( (pid = waitpid(-1, &stat, WNOHANG) ) > 0)
+        printf("child %d terminated\n", pid);
+    return;
 }
 
 

@@ -2,6 +2,7 @@
 #include <sys/unistd.h>
 #include <errno.h>
 #include <limits.h>
+#include <string.h>
 
 
 #define MAXLINE 4096
@@ -65,7 +66,7 @@ ssize_t writen(int fd, const void * vptr, size_t n)
 }
 
 // read_cnt为全局变量，系统会初始化为0
-static int read_cnt;
+static int read_cnt = 0;
 static char * read_ptr;
 static char read_buf[MAXLINE];
 
@@ -85,7 +86,7 @@ static ssize_t myread(int fd, char * ptr)
             else if (read_cnt == 0)
                 return 0;
         // 每次读取后，read_ptr指向read_buf的第一个元素的位置
-        read_ptr == read_buf;
+        read_ptr = read_buf;
     }
 
     // 每次调用，计数减一
@@ -95,12 +96,17 @@ static ssize_t myread(int fd, char * ptr)
     return 1;
 }
 
+
+
+
+
 ssize_t readline(int fd, void * vptr, size_t maxlen)
 {
     ssize_t n, rc;
     char c, *ptr;
 
     ptr = vptr;
+
     for (n = 1; n < maxlen; n++)
     {
         if ( (rc = myread(fd, &c) ) == 1)
@@ -112,7 +118,7 @@ ssize_t readline(int fd, void * vptr, size_t maxlen)
         else if (rc == 0)
         {
             *ptr = 0;
-            return n -1;
+            return n - 1;
         }
         else
             return -1;

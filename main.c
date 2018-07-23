@@ -9,18 +9,15 @@
 #include "byte_order.h"
 #include "addr_trans.h"
 #include "mysignal.h"
-#include <stdbool.h>
 
-
-
-
-
-
+#include "echo_run.h"
+#include "rio_read_write.h"
+#include "myreaddir.h"
 
 
 int main(int argc, char *argv[])
 {
-    run_signal();
+    myreaddir();
 
     return 0;
 }
