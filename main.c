@@ -13,11 +13,14 @@
 #include "echo_run.h"
 #include "rio_read_write.h"
 #include "myreaddir.h"
+#include "mypasswd.h"
+#include "myuname.h"
+#include "mytime.h"
 
 
 int main(int argc, char *argv[])
 {
-    myreaddir();
+    mytime();
 
     return 0;
 }
