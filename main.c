@@ -16,11 +16,13 @@
 #include "mypasswd.h"
 #include "myuname.h"
 #include "mytime.h"
+#include "film2.h"
+#include "film3.h"
 
 
 int main(int argc, char *argv[])
 {
-    mytime();
+    film3(100000);
 
     return 0;
 }
