@@ -18,11 +18,13 @@
 #include "mytime.h"
 #include "film2.h"
 #include "film3.h"
+#include "test_queue.h"
+#include "mall.h"
 
 
 int main(int argc, char *argv[])
 {
-    film3(100000);
+    mall();
 
     return 0;
 }
