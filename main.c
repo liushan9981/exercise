@@ -20,11 +20,12 @@
 #include "film3.h"
 #include "test_queue.h"
 #include "mall.h"
+#include "test_bin_tree.h"
 
 
 int main(int argc, char *argv[])
 {
-    mall();
+    test_bin_tree();
 
     return 0;
 }
