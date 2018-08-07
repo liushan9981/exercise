@@ -21,11 +21,11 @@
 #include "test_queue.h"
 #include "mall.h"
 #include "test_bin_tree.h"
-
+#include "myprintf.h"
 
 int main(int argc, char *argv[])
 {
-    test_bin_tree();
+    myprintf();
 
     return 0;
 }
