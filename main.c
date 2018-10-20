@@ -22,10 +22,14 @@
 #include "mall.h"
 #include "test_bin_tree.h"
 #include "myprintf.h"
+#include "create_tempfile.h"
+#include "myfork.h"
+#include "pr_exit.h"
+#include "fork_twice.h"
 
 int main(int argc, char *argv[])
 {
-    myprintf();
+    fork_twice();
 
     return 0;
 }
