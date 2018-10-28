@@ -26,10 +26,12 @@
 #include "myfork.h"
 #include "pr_exit.h"
 #include "fork_twice.h"
+#include "run_exec.h"
+#include "run_setuid.h"
 
 int main(int argc, char *argv[])
 {
-    fork_twice();
+    run_setuid();
 
     return 0;
 }
