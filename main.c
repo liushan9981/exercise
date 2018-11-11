@@ -28,10 +28,13 @@
 #include "fork_twice.h"
 #include "run_exec.h"
 #include "run_setuid.h"
+#include "interpreter.h"
+#include "mysystem.h"
 
 int main(int argc, char *argv[])
 {
-    run_setuid();
+    test_system();
+
 
     return 0;
 }
