@@ -30,11 +30,16 @@
 #include "run_setuid.h"
 #include "interpreter.h"
 #include "mysystem.h"
+#include "proc_nice.h"
+#include "proc_time.h"
+
+
+
+
 
 int main(int argc, char *argv[])
 {
-    test_system();
-
+    run_proc_nice();
 
     return 0;
 }
