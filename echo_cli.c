@@ -10,42 +10,92 @@
 #include <memory.h>
 #include <zconf.h>
 #include <sys/stat.h>
+#include <sys/select.h>
+#include <f2fs_fs.h>
 
 #include "writen_readn_readline.h"
 #include "echo_sum.h"
 
 
-void str_cli(FILE * fp, int sockfd)
-{
+void str_cli(FILE * fp, int sockfd) {
     const int buffer_size = 4096;
     char sendline[buffer_size], recvline[buffer_size];
+    int maxfdp1, stdin_eof;
+    fd_set rset;
+    ssize_t n;
 
-    struct args_t args;
-    struct result_t result;
+    stdin_eof = 0;
 
-    while (fgets(sendline, buffer_size, fp) != NULL)
+
+    while (1)
     {
-        if (sscanf(sendline, "%ld%ld", &args.arg1, &args.arg2) != 2)
+        FD_ZERO(&rset);
+        if (stdin_eof == 0)
+            FD_SET(fileno(fp), &rset);
+        FD_SET(sockfd, &rset);
+        maxfdp1 = max(sockfd, fileno(fp)) + 1;
+        select(maxfdp1, &rset, NULL, NULL, NULL);
+
+        if (FD_ISSET(sockfd, &rset) )
         {
-            fprintf(stderr, "input error\n");
-            continue;
+            if ( (n = read(sockfd, recvline, buffer_size) ) == 0)
+            {
+                if (stdin_eof == 1)
+                    return;
+                else
+                {
+                    printf("server terminated prematurely\n");
+                    exit(EXIT_FAILURE);
+                }
+            }
+
+            write(fileno(fp), recvline, n);
         }
 
-        writen(sockfd, &args, sizeof(args) );
-        if (readn(sockfd, &result, sizeof(result) ) == 0)
+        if (FD_ISSET(fileno(fp), &rset))
         {
-            fprintf(stderr, "str_cli: server terminated prematurely\n");
-            exit(EXIT_FAILURE);
-        }
-        printf("result: %ld\n", result.sum);
+            if ( (n = read(fileno(fp), sendline, buffer_size) ) == 0)
+            {
+                stdin_eof = 1;
+                shutdown(sockfd, SHUT_WR);
+                FD_CLR(fileno(fp), &rset);
+                continue;
+            }
 
+            writen(sockfd, sendline, n);
+        }
+
+
+    }
+
+
+// 二进制读写
+//    struct args_t args;
+//    struct result_t result;
+
+//    while (fgets(sendline, buffer_size, fp) != NULL)
+//    {
+//        if (sscanf(sendline, "%ld%ld", &args.arg1, &args.arg2) != 2)
+//        {
+//            fprintf(stderr, "input error\n");
+//            continue;
+//        }
+//
+//        writen(sockfd, &args, sizeof(args) );
+//        if (readn(sockfd, &result, sizeof(result) ) == 0)
+//        {
+//            fprintf(stderr, "str_cli: server terminated prematurely\n");
+//            exit(EXIT_FAILURE);
+//        }
+//        printf("result: %ld\n", result.sum);
+//
 //        if (readline(sockfd, recvline, buffer_size) == 0)
 //        {
 //            fprintf(stderr, "str_cli: server terminated prematurely\n");
 //            exit(EXIT_FAILURE);
 //        }
 //        fputs(recvline, stdout);
-    }
+//    }
 }
 
 

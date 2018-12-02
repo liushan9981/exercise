@@ -39,7 +39,7 @@
 
 int main(int argc, char *argv[])
 {
-    run_proc_nice();
+    echo_run(argc, argv);
 
     return 0;
 }
