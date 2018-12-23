@@ -20,7 +20,7 @@ void echo_run(int argc, char * argv[])
     else if (argc == 2)
     {
         if (strcmp(argv[1], "srv") == 0)
-            echo_srv_select();
+            echo_srv_epoll();
     }
     else
     {

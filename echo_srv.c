@@ -13,10 +13,13 @@
 #include <sys/stat.h>
 #include <sys/poll.h>
 #include <limits.h>
+#include <sys/epoll.h>
 
 #include "writen_readn_readline.h"
 #include "mysignal.h"
 #include "echo_sum.h"
+
+#define EPOLL_MAX_EVENTS 1024
 
 
 void str_srv(int sockfd)
@@ -195,6 +198,7 @@ void echo_srv_select(void)
 
 
 
+
 void echo_srv_poll(void)
 {
     int listenfd, connfd;
@@ -321,6 +325,148 @@ void echo_srv_poll(void)
 
 }
 
+
+
+void echo_srv_epoll(void)
+{
+    int listenfd, connfd;
+    socklen_t clilen;
+    struct sockaddr_in cliaddr, servaddr;
+
+    const int myqueue = 100;
+    char addr_buf[INET_ADDRSTRLEN];
+
+    listenfd = socket(AF_INET, SOCK_STREAM, 0);
+
+    struct epoll_event event;
+    struct epoll_event * events;
+    int epoll_fd, ready_count, index, n, tmp_fd;
+    const int buffer_size = 4096;
+    char buf[buffer_size];
+
+    bzero(&servaddr, sizeof(servaddr) );
+    servaddr.sin_family = AF_INET;
+    servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+    servaddr.sin_port = htons(8000);
+
+    if (bind(listenfd, (struct sockaddr *)&servaddr, sizeof(servaddr) ) == -1)
+    {
+        fprintf(stderr, "bind error\n");
+        exit(EXIT_FAILURE);
+    }
+
+    if (listen(listenfd, myqueue) == -1)
+    {
+        fprintf(stderr, "listen error\n");
+        exit(EXIT_FAILURE);
+    }
+
+    epoll_fd = epoll_create1(0);
+    if (epoll_fd == -1)
+    {
+        printf("epoll_create error\n");
+        exit(EXIT_FAILURE);
+    }
+
+    event.data.fd = listenfd;
+    event.events = EPOLLIN | EPOLLET;
+    if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, listenfd, &event) == -1)
+    {
+        printf("epoll_ctl error\n");
+        exit(EXIT_FAILURE);
+    }
+
+    events = malloc(EPOLL_MAX_EVENTS * sizeof(event) );
+
+
+
+    printf("start using epoll\n");
+
+
+    while (1)
+    {
+        clilen = sizeof(cliaddr);
+
+        ready_count = epoll_wait(epoll_fd, events, EPOLL_MAX_EVENTS, -1);
+        for (index = 0; index < ready_count; index++)
+        {
+            if ( (events[index].events & EPOLLERR) || (events[index].events & EPOLLHUP) ||
+                    ( !(events[index].events & EPOLLIN) ) )
+            {
+                printf("epoll error\n");
+                // 可能要关闭事件
+                close(events[index].data.fd);
+                continue;
+            }
+            else if (listenfd == events[index].data.fd)
+            {
+                if ( (connfd = accept(listenfd, (struct sockaddr *)&cliaddr, &clilen) ) < 0)
+                {
+                    // 重启被中断的系统调用accept
+                    if (errno == EINTR)
+                        continue;
+                        // accept返回前连接终止, SVR4实现
+                    else if (errno == EPROTO)
+                        continue;
+                        // accept返回前连接终止, POSIX实现
+                    else if (errno == ECONNABORTED)
+                        continue;
+                    else
+                    {
+                        printf("accept error!\n");
+                        exit(EXIT_FAILURE);
+                    }
+                }
+
+                printf("peer ip: %s\n", inet_ntop(AF_INET, &cliaddr.sin_addr, addr_buf, INET_ADDRSTRLEN) );
+                printf("peer port: %d\n", ntohs(cliaddr.sin_port) );
+
+                event.data.fd = connfd;
+                event.events = EPOLLIN | EPOLLET;
+                if ( epoll_ctl(epoll_fd, EPOLL_CTL_ADD, connfd, &event) == -1)
+                {
+                    printf("epoll_ctl connfd add error\n");
+                    exit(EXIT_FAILURE);
+                }
+            }
+            else
+            {
+                if ( (n = read(events[index].data.fd, buf, buffer_size) ) == 0)
+                {
+                    tmp_fd = events[index].data.fd;
+                    event.data.fd = tmp_fd;
+                    if ( epoll_ctl(epoll_fd, EPOLL_CTL_DEL, tmp_fd, &event) == -1)
+                    {
+                        printf("epoll_ctl connfd delete error\n");
+                        exit(EXIT_FAILURE);
+                    }
+                    else
+                        printf("epoll delete fd: %d\n", tmp_fd);
+                    close(tmp_fd);
+                }
+                else if (n < 0 && errno == EINTR)
+                    continue;
+                else if (n < 0 && errno == ECONNRESET)
+                    // 可能要关闭事件
+                    close(events[index].data.fd);
+                else if (n < 0)
+                {
+                    fprintf(stderr, "str_echo: read error");
+                    exit(EXIT_FAILURE);
+                }
+                else if (n > 0)
+                    writen(events[index].data.fd, buf, n);
+            }
+
+        }
+
+    }
+    free(events);
+    close(epoll_fd);
+
+
+
+}
 
 
 
