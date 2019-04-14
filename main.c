@@ -32,14 +32,15 @@
 #include "mysystem.h"
 #include "proc_nice.h"
 #include "proc_time.h"
+#include "orphan_process.h"
 
-
-
+#include <string.h>
+#include <errno.h>
 
 
 int main(int argc, char *argv[])
 {
-    echo_run(argc, argv);
+    run_orphan_process();
 
     return 0;
 }
