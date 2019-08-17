@@ -33,6 +33,7 @@
 #include "proc_nice.h"
 #include "proc_time.h"
 #include "orphan_process.h"
+#include "https_client.h"
 
 #include <string.h>
 #include <errno.h>
@@ -40,7 +41,7 @@
 
 int main(int argc, char *argv[])
 {
-    run_orphan_process();
+    run_signal_usr();
 
     return 0;
 }
