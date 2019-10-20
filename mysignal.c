@@ -3,6 +3,11 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <pwd.h>
+#include <string.h>
+#include <stdlib.h>
+
+
 
 Sigfunc *signal(int signo, Sigfunc *func)
 {
@@ -57,4 +62,45 @@ void run_signal(void)
         printf("---------------\n");
         sleep(1);
     }
+}
+
+static void my_alarm(int signo);
+
+static void my_alarm(int signo)
+{
+    struct passwd * rootptr;
+    printf("in signal handler\n");
+    if ( (rootptr = getpwnam("root") ) == NULL)
+    {
+        printf("getpwname(root) error\n");
+        exit(1);
+    }
+    printf("222\n");
+    // alarm(1);
+}
+
+
+void run_my_alarm(void)
+{
+    struct passwd * ptr;
+    signal(SIGALRM, my_alarm);
+    alarm(1);
+
+    for ( ; ; )
+    {
+        printf("1\n");
+        if ( (ptr = getpwnam("liushan") ) == NULL)
+        {
+            printf("getpwname(liushan) error\n");
+            exit(1);
+        }
+
+        printf("pw_name: %s\n", ptr->pw_name);
+
+        if (strcmp(ptr->pw_name, "liushan") != 0)
+        {
+            printf("return value corrupted, pw_name = %s\n", ptr->pw_name);
+        }
+    }
+
 }

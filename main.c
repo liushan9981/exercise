@@ -34,6 +34,9 @@
 #include "proc_time.h"
 #include "orphan_process.h"
 #include "https_client.h"
+#include "sleep2.h"
+#include "sig_pr_mask.h"
+#include "sig_sigpending.h"
 
 #include <string.h>
 #include <errno.h>
@@ -41,7 +44,7 @@
 
 int main(int argc, char *argv[])
 {
-    run_signal_usr();
+    test_sigpending();
 
     return 0;
 }
