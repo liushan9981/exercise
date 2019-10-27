@@ -37,6 +37,10 @@
 #include "sleep2.h"
 #include "sig_pr_mask.h"
 #include "sig_sigpending.h"
+#include "sig_sigsetjmp.h"
+#include "sig_sigsuspend.h"
+#include "sig_system.h"
+#include "sig_other.h"
 
 #include <string.h>
 #include <errno.h>
@@ -44,7 +48,7 @@
 
 int main(int argc, char *argv[])
 {
-    test_sigpending();
+    sig_test_other();
 
     return 0;
 }

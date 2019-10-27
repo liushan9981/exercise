@@ -32,10 +32,13 @@ void pr_mask(const char *str)
             printf(" SIGQUIT");
         if (sigismember(&sigset, SIGUSR1))
             printf(" SIGUSR1");
+        if (sigismember(&sigset, SIGUSR2))
+            printf(" SIGUSR2");
         if (sigismember(&sigset, SIGALRM))
             printf(" SIGALRM");
         if (sigismember(&sigset, SIGTERM))
             printf(" SIGTERM");
+        printf("\n");
     }
 
     errno = errno_save;

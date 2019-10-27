@@ -28,7 +28,7 @@
     [liushan@liushan-pc 下载]$
  */
 
-int mysystem(const char * cmdstring);
+
 
 
 
