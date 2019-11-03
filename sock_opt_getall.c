@@ -1,0 +1,196 @@
+//
+// Created by liushan on 19-11-3.
+//
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <netinet/tcp.h>
+#include <netinet/in.h>
+#include <zconf.h>
+#include <stdbool.h>
+
+#include "sock_opt_getall.h"
+#include "myutils.h"
+
+
+union val {
+    int i_val;
+    long l_val;
+    struct linger linger_val;
+    struct timeval timeval_val;
+} val;
+
+
+static char * sock_str_flag(union val *, int);
+static char * sock_str_int(union val *, int);
+static char * sock_str_linger(union val *, int);
+static char * sock_str_timeval(union val *, int);
+
+struct sock_opts {
+    const char *opt_str;
+    int opt_level;
+    int opt_name;
+    char *(* opt_val_str) (union val *, int);
+} sock_opts[] = {
+        { "SO_BROADCAST", SOL_SOCKET, SO_BROADCAST, sock_str_flag},
+        { "SO_DEBUG",     SOL_SOCKET, SO_DEBUG,     sock_str_flag},
+        { "SO_DONTROUTE", SOL_SOCKET, SO_DONTROUTE, sock_str_flag},
+        { "SO_ERROR",     SOL_SOCKET, SO_ERROR,     sock_str_int},
+        { "SO_KEEPALIVE", SOL_SOCKET, SO_KEEPALIVE, sock_str_flag},
+        { "SO_LINGER",    SOL_SOCKET, SO_LINGER,    sock_str_linger},
+        { "SO_OOBINLINE", SOL_SOCKET, SO_OOBINLINE, sock_str_flag},
+        { "SO_RCVBUF",    SOL_SOCKET, SO_RCVBUF,    sock_str_int},
+        { "SO_SNDBUF",    SOL_SOCKET, SO_SNDBUF,    sock_str_int},
+        { "SO_RCVLOWAT",  SOL_SOCKET, SO_RCVLOWAT,  sock_str_int},
+        { "SO_SNDLOWAT",  SOL_SOCKET, SO_SNDLOWAT,  sock_str_int},
+        { "SO_RCVTIMEO",  SOL_SOCKET, SO_RCVTIMEO,  sock_str_timeval},
+        { "SO_SNDTIMEO",  SOL_SOCKET, SO_SNDTIMEO,  sock_str_timeval},
+        { "SO_REUSEADDR", SOL_SOCKET, SO_REUSEADDR, sock_str_flag},
+#ifdef SO_REUSEPORT
+        { "SO_REUSEPORT", SOL_SOCKET, SO_REUSEPORT, sock_str_flag},
+#else
+        { "SO_REUSEPORT", 0, 0, NULL},
+#endif
+        { "SO_TYPE",      SOL_SOCKET, SO_TYPE,      sock_str_int},
+#ifdef SO_USELOOPBACK
+        { "SO_USELOOPBACK", SOL_SOCKET, SO_USELOOPBACK, sock_str_flag},
+#else
+        { "SO_USELOOPBACK", 0, 0, NULL},
+#endif
+        { "IP_TOS",        IPPROTO_IP,   IP_TOS,        sock_str_int},
+        { "IP_TTL",        IPPROTO_IP,   IP_TTL,        sock_str_int},
+        { "IPV6_DONTFRAG", IPPROTO_IPV6, IPV6_DONTFRAG, sock_str_flag},
+        { "IPV6_UNICAST_HOPS", IPPROTO_IPV6, IPV6_UNICAST_HOPS, sock_str_int},
+        { "IPV6_V6ONLY", IPPROTO_IPV6, IPV6_V6ONLY, sock_str_flag},
+        { "TCP_MAXSEG", IPPROTO_TCP, TCP_MAXSEG, sock_str_int},
+        { "TCP_NODELAY", IPPROTO_TCP, TCP_NODELAY, sock_str_flag},
+#ifdef SCTP_AUTOCLOSE
+        { "SCTP_AUTOCLOSE", IPPROTO_SCTP, SCTP_AUTOCLOSE, sock_str_int},
+#else
+        { "SCTP_AUTOCLOSE", 0, 0, NULL},
+#endif
+#ifdef SCTP_MAXBURST
+        { "SCTP_MAXBURST", IPPROTO_SCTP, SCTP_MAXBURST, sock_str_int},
+#else
+        { "SCTP_MAXBURST", 0, 0, NULL},
+#endif
+#ifdef SCTP_MAXSEG
+        { "SCTP_MAXSEG", IPPROTO_SCTP, SCTP_MAXSEG, sock_str_int},
+#else
+        { "SCTP_MAXSEG", 0, 0, NULL},
+#endif
+#ifdef SCTP_NODELAY
+        { "SCTP_NODELAY", IPPROTO_SCTP, SCTP_NODELAY, sock_str_flag},
+#else
+        { "SCTP_NODELAY", 0, 0, NULL},
+#endif
+        { NULL, 0, 0, NULL}
+};
+
+
+
+
+
+
+
+
+void test_sock_opt_getall(void)
+{
+    int fd;
+    socklen_t len;
+    struct sock_opts *ptr;
+    bool fd_flag = true;
+
+    for (ptr = sock_opts; ptr->opt_str != NULL; ptr++)
+    {
+        fd_flag = false;
+        printf("%s: ", ptr->opt_str);
+        if (ptr->opt_val_str == NULL)
+            printf("(undefined)\n");
+        else
+        {
+            switch(ptr->opt_level)
+            {
+                case SOL_SOCKET:
+                case IPPROTO_IP:
+                case IPPROTO_TCP:
+                    fd = socket(AF_INET, SOCK_STREAM, 0);
+                    fd_flag = true;
+                    break;
+#ifdef IPV6
+                case IPPROTO_IPV6:
+                    fd = socket((AF_INET6, SOCK_STREAM, 0);
+                    fd_flag = true;
+                    break;
+#endif
+#ifdef IPPROTO_SCTP
+                case IPPROTO_SCTP:
+                    fd = socket(AF_INET, SOCK_SEQPACKET, IPPROTO_SCTP);
+                    fd_flag = true;
+                    break;
+#endif
+                default:
+                    printf("Can't create fd for level %d\n", ptr->opt_level);
+
+            }
+
+            if (! fd_flag)
+                continue;
+
+            len = sizeof(val);
+            printf("len 1: %d\n", len);
+            if (getsockopt(fd, ptr->opt_level, ptr->opt_name, &val, &len) == -1)
+                err_exit("getsockopt error");
+            else
+            {
+                printf("len 2: %d\n", len);
+                // 该处使用函数指针和函数是一样的
+                printf("default = %s\n", (*ptr->opt_val_str)(&val, len));
+            }
+
+            close(fd);
+        }
+    }
+
+    exit(0);
+}
+
+
+static char strres[128];
+
+static char * sock_str_flag(union val *ptr, int len)
+{
+    if (len != sizeof(int) )
+        snprintf(strres, sizeof(strres), "size (%d) not sizeof(int)", len);
+    else
+        snprintf(strres, sizeof(strres), "%s", (ptr->i_val == 0) ? "off": "on");
+    return (strres);
+}
+
+
+static char str_int[128];
+static char * sock_str_int(union val *ptr, int len)
+{
+    if (len != sizeof(int) )
+        snprintf(str_int, sizeof(str_int), "size (%d) not sizeof(int)", len);
+    else
+        snprintf(str_int, sizeof(str_int), "%d", ptr->i_val);
+    return str_int;
+}
+
+
+static char str_linger[128];
+static char * sock_str_linger(union val * ptr, int len)
+{
+    snprintf(str_linger, sizeof(str_linger), "l_onoff=%d, l_linger=%d",
+            ptr->linger_val.l_onoff, ptr->linger_val.l_linger);
+    return str_linger;
+}
+
+
+static char str_timeval[128];
+static char * sock_str_timeval(union val * ptr, int len)
+{
+    snprintf(str_timeval, sizeof(str_timeval), "%d sec, %d usec", ptr->timeval_val.tv_sec, ptr->timeval_val.tv_usec);
+    return str_timeval;
+}

@@ -41,6 +41,7 @@
 #include "sig_sigsuspend.h"
 #include "sig_system.h"
 #include "sig_other.h"
+#include "sock_opt_getall.h"
 
 #include <string.h>
 #include <errno.h>
@@ -48,7 +49,7 @@
 
 int main(int argc, char *argv[])
 {
-    sig_test_other();
+    test_sock_opt_getall();
 
     return 0;
 }
