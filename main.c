@@ -46,10 +46,11 @@
 #include <string.h>
 #include <errno.h>
 
+#include "test.h"
 
 int main(int argc, char *argv[])
 {
-    test_sock_opt_getall();
+    temp_test();
 
     return 0;
 }
